@@ -35,8 +35,12 @@ class SAES:
         self.MixMatrix = MixMatrix if MixMatrix else [[1, 4], [4, 1]]
         self.MixMatrix_INV = MixMatrix_INV if MixMatrix_INV else [[9, 2], [2, 9]]
 
-        # 初始化密钥
-        self.key = key
+        # 检查key的长度是否为16的倍数
+        if len(key) % 16 != 0:
+            raise ValueError("Key length must be a multiple of 16!")
+
+        # 将key分割为16位长的元素
+        self.keys_list = [key[i:i + 16] for i in range(0, len(key), 16)]
 
     def key_expansion(self):
         """ 密钥扩展算法 """
@@ -131,8 +135,8 @@ class SAES:
         output_string2 = ''.join(format(num, '04b') for num in mixed_column2)
         return output_string1 + output_string2
 
-    def encrypt(self, plaintext):
-        """加密函数，输入明文，输出密文"""
+    def _single_encrypt(self, plaintext):
+        """单轮加密函数，输入明文，输出密文。加密key为16位"""
 
         # 密钥扩展
         keys = self.key_expansion()
@@ -153,8 +157,8 @@ class SAES:
 
         return ciphertext
 
-    def decrypt(self, ciphertext):
-        """解密函数，输入密文，输出明文"""
+    def _single_decrypt(self, ciphertext):
+        """单轮解密函数，输入密文，输出明文。加密key为16位"""
 
         # 密钥扩展
         keys = self.key_expansion()
@@ -175,6 +179,23 @@ class SAES:
 
         return plaintext
 
+    def encrypt(self, plaintext):
+        """多轮加密函数，输入明文，输出密文。key为16的倍数"""
+        ciphertext = plaintext
+        # 对每一个密钥进行加密操作
+        for key in self.keys_list:
+            self.key = key
+            ciphertext = self._single_encrypt(ciphertext)
+        return ciphertext
+
+    def decrypt(self, ciphertext):
+        """多轮解密函数，输入密文，输出明文。key为16的倍数"""
+        plaintext = ciphertext
+        # 对每一个密钥进行解密操作（注意逆序操作）
+        for key in reversed(self.keys_list):
+            self.key = key
+            plaintext = self._single_decrypt(plaintext)
+        return plaintext
 
 if __name__ == '__main__':
     key = '0010110101010101'
@@ -185,3 +206,21 @@ if __name__ == '__main__':
     print(f'通过SAES加密后的密文为：{encrypted_ciphertext}')
     decrypted_plaintext = saes.decrypt(encrypted_ciphertext)
     print(f'通过SAES解密后的明文为：{decrypted_plaintext}')
+
+    print('------------------')
+
+    long_key = '10110011100110101101111011001101'
+    long_saes = SAES(key=long_key)
+    long_plaintext1 = '1101011100101100'
+    print(f'本次SAES加密明文为：{long_plaintext1}')
+    long_encrypted_ciphertext1 = long_saes.encrypt(long_plaintext1)
+    print(f'通过SAES加密后的密文为：{long_encrypted_ciphertext1}')
+    long_decrypted_plaintext1 = long_saes.decrypt(long_encrypted_ciphertext1)
+    print(f'通过SAES解密后的明文为：{long_decrypted_plaintext1}')
+
+    long_plaintext2 = '1111111100000000'
+    print(f'本次SAES加密明文为：{long_plaintext2}')
+    long_encrypted_ciphertext2 = long_saes.encrypt(long_plaintext2)
+    print(f'通过SAES加密后的密文为：{long_encrypted_ciphertext2}')
+    long_decrypted_plaintext2 = long_saes.decrypt(long_encrypted_ciphertext2)
+    print(f'通过SAES解密后的明文为：{long_decrypted_plaintext2}')

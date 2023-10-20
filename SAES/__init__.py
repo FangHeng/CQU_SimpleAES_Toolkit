@@ -5,4 +5,4 @@
 # @Software: PyCharm 
 # @Comment : S-DES加密算法的实现
 
-print("使用S-DES加密算法进行加密/解密处理...")
+print("使用S-AES加密算法进行加密/解密处理...")
