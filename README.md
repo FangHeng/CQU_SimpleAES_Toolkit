@@ -132,10 +132,18 @@ About Us界面主要介绍课程和项目的相关信息，包含课程名称代
 
 #### 4.2 第2关：交叉测试
 
-> 考虑到是**算法标准**，所有人在编写程序的时候需要使用相同算法流程和转换单元(P-Box、S-Box等)，以保证算法和程序在异构的系统或平台上都可以正常运行。设有A和B两组位同学(选择相同的密钥K)；则A、B组同学编写的程序对明文P进行加密得到相同的密文C；或者B组同学接收到A组程序加密的密文C，使用B组程序进行解密可得到与A相同的P。
+> 考虑到是"算法标准"，所有人在编写程序的时候需要使用相同算法流程和转换单元(替换盒、列混淆矩阵等)，以保证算法和程序在异构的系统或平台上都可以正常运行。设有A和B两组位同学(选择相同的密钥K)；则A、B组同学编写的程序对明文P进行加密得到相同的密文C；或者B组同学接收到A组程序加密的密文C，使用B组程序进行解密可得到与A相同的P。
 > - 具体详细测试代码请看[task2测试文件夹](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task2)。
 
 我们在该轮测试中与两个小组进行了交叉测试，验证了我们加密算法的正确性。
+
+这里给出小组交叉测试的一个实例
+
+**别组：**
+![img.png](README.assets/CrossTest.png)
+
+**我们：**
+![CrossMine.png](README.assets%2FCrossMine.png)
 
 我们在`/testZone/task2`文件夹中提供了与两个小组测试的jupyter notebook测试代码，可以直接打开task2测试文件夹中的[task2.ipynb文件](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task2/task2.ipynb)，即可看到测试结果。
 
@@ -150,7 +158,7 @@ About Us界面主要介绍课程和项目的相关信息，包含课程名称代
 
 ![ASCFunction](README.assets/ASCFunction.gif)
 
-当输出不符合标准时，返回处理失败的错误：
+当输入不符合标准时，返回处理失败的错误：
 
 ![FalseFunction](README.assets/FalseFunction.gif)
 
@@ -166,24 +174,66 @@ About Us界面主要介绍课程和项目的相关信息，包含课程名称代
 所以我们在加密ASCII码是采用了显示十六进制的加密结果，而不是对应的Unicode字符，避免了很多无法显示的结果与乱码。
 在对应的解密阶段我们也采用了十六进制的解密方式，将十六进制的密文转换为对应的ASCII码，这样就可以避免乱码的出现。
 
-#### 4.4 第4关：暴力破解
+#### 4.4 第4关：多重加密
 
-> 假设你找到了使用相同密钥的明、密文对(一个或多个)，请尝试使用暴力破解的方法找到正确的密钥Key。在编写程序时，你也可以考虑使用多线程的方式提升破解的效率。请设定时间戳，用视频或动图展示你在多长时间内完成了暴力破解。
+> 在实验的这一部分，我们探讨了多重加密的概念，并通过多次迭代的方法，使用不同的密钥对数据进行加密，从而提高加密的安全性。
 > - 具体详细测试代码请看[task4测试文件夹](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task4)。
 
-为了测试SAES算法的安全性，我们在该轮测试中进行了暴力破解的测试，验证了我们加密算法的安全性。
+##### 4.4.1 双重加密
+我们扩展了S-AES算法，实现了双重加密。尽管分组长度仍为16 bits，但我们通过两次加密的方式将理论密钥空间扩展到了32 bits的密钥长度，其中包含两个16 bits的子密钥。
 
-我们给出了三组明文密文对，并依次对密钥进行了暴力破解.
+在我们建立加密类SAES的过程中,已经实现了多重加密的功能，定义在类方法中
 
-我们在`/testZone/task4`文件夹中提供了三组明密文对的jupyter notebook测试代码，可以直接打开task4测试文件夹中的[task4.ipynb文件](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task4/task4.ipynb)，即可看到测试结果。
+```python
+# 将key分割为16位长的元素
+self.keys_list = [key[i:i + 16] for i in range(0, len(key), 16)]
+```
+在encrypt函数中的多重加密循环如下
+```python
+# 对每一个密钥进行加密操作
+    for key in self.keys_list:
+        self.key = key
+        ciphertext = self._single_encrypt(ciphertext)
+```
+所以双重加密只需输入32bits拼接key即可，即
+```python
+# 拼接的32bits key
+double_key = '10110011100110101101111011001101'
+double_saes = SAES(key=double_key)
+double_encrypted_ciphertext = double_saes.encrypt('替换明文')
+```
+- 具体详细实现请查看[task4测试文件夹](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task4)
 
-就结果来看，我们可以通过jupyter中代码框的运行时间来看到，我们的暴力破解算法的运行时间基本在毫秒级，大多在20+ms就可以完成破解，并给出全部的可能的key。
 
-同时我们也发现了每一对明密文对都可能会对应多个可解的key，这在后续第5关会进行详细讨论。
+##### 4.4.2 中间相遇攻击
+> 对双重加密而言，中间相遇攻击是相当致命的
 
-#### 4.5 第5关：封闭测试
+模拟中间相遇攻击我们需要遍历所有可能的密钥，然后用每一个可能的密钥进行解密操作，检查解密后的结果是否是预期的明文即可。
 
->  根据第4关的结果，进一步分析，对于你随机选择的一个明密文对，是不是有不止一个密钥Key？进一步扩展，对应明文空间任意给定的明文分组P_{n}，是否会出现选择不同的密钥K_{i}\ne K_{j}加密得到相同密文C_n的情况？
+值得一提的是当我们只拥有一个明密文对时,可能有上万个密钥满足情况。而当我们掌握了2~3个明密文对的时候就完全能够锁定密钥。
+
+就结果来看，我们可以通过jupyter中代码框的运行时间来看到，我们的中间相遇攻击算法的运行时间基本在秒级，大多在5s就可以完成破解，并给出全部的可能的key。
+
+我们在`/testZone/task4`文件夹中提供了单组明密文对和多组明密文对的中间相遇攻击模拟数据，可以直接打开task4测试文件夹中的[task4.ipynb文件](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task4/task4.ipynb)，即可看到模拟结果。
+
+##### 4.4.3 三重加密
+> (1)按照32 bits密钥Key(K1+K2)的模式进行三重加密解密,
+> 
+> (2)使用48bits(K1+K2+K3)的模式进行三重加解密
+> 
+> 考虑到我们在设计加密类时就已经考虑到了多重加密的情况,为了保持代码的连贯性我们选择第二种的模式
+
+加解密的调用方法如下
+```python
+triple_key= '101100111001101011011110110011011011101000100111'
+triple_saes = SAES(key=triple_key)
+triple_encrypted_ciphertext = triple_saes.encrypt('替换明文')
+triple_decrypted_plaintext = triple_saes.decrypt(triple_encrypted_ciphertext)
+```
+经过我们的加解密测试，多重加密的实现确认完成。完整的测试和实现请查看[task4测试文件夹](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task4)
+#### 4.5 第5关：工作模式
+
+>  在本实验部分，我们探索了如何使用密码分组链(CBC)工作模式，基于S-AES算法对较长的明文消息进行加密。
 > - 具体详细测试代码请看[task5测试文件夹](https://github.com/FangHeng/CQU_SimpleAES_Toolkit/tree/main/testZone/task5)。
 
 我们在该轮测试中进行了封闭测试，讨论了SAES算法的安全性。
