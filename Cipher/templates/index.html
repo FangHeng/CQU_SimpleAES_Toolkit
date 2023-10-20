@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>信息安全导论：S-DES的实现</title>
+    <title>信息安全导论：S-AES的实现</title>
     <link rel="icon" type="image/png" href="{% static 'image/icon.jpg' %}">
     <link href="https://fonts.googleapis.com/css?family=Lato:400,700" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css">
@@ -18,12 +18,12 @@
 <!-- Hero -->
 <section class="et-hero-tabs">
     <h1 style="font-size: 80px;position: absolute;top: 40%;text-align: center;left: 0;right: 0;margin: auto;width: 60%">
-        S-DES 加解密算法实现</h1>
+        S-AES 加解密算法实现</h1>
     <h3 style="position: absolute;top: 70%;text-align: center;left: 0;right: 0;margin: auto;width: 50%">实验小组成员 :
         方珩 , 杨俣豪</h3>
     <div class="et-hero-tabs-container">
         <a class="et-hero-tab" href="#tab-es6">Intro</a>
-        <a class="et-hero-tab" href="#tab-flexbox">S-DES</a>
+        <a class="et-hero-tab" href="#tab-flexbox">S-AES</a>
         <a class="et-hero-tab" href="#tab-react">More Algorithm</a>
         <a class="et-hero-tab" href="#tab-angular">About Us</a>
         {#      <a class="et-hero-tab" href="#tab-other">Other</a>#}
@@ -35,16 +35,18 @@
 <main class="et-main">
     <section class="et-slide" id="tab-es6">
         <h1 style="position: absolute;top:30%;text-align: center">Introduction</h1>
-        <p style="position: absolute;top:50%;text-align: center;font-size: 25px">S-DES（简单数据加密标准）是一种对称密钥加密算法,
-            它是对DES（数据加密标准）的简化版本。<br><br>
-            由于其结构的简单性，常用于帮助学习者更好地理解对称密钥加密的工作原理。</p>
+        <p style="position: absolute;top:50%;text-align: center;font-size: 25px">
+            SAES（简化的高级加密标准）是一种对称密钥加密算法，
+    它是对AES（高级加密标准）的简化版本。<br><br>
+    由于其结构的简单性，常用于帮助学习者更好地理解对称密钥加密的工作原理。
+        </p>
     </section>
     <section class="et-slide" id="tab-flexbox">
-        <h1 style="position: absolute;top:5%;text-align: center">S-DES Cipher Conversion</h1>
+        <h1 style="position: absolute;top:5%;text-align: center">S-AES Cipher Conversion</h1>
         <div class="container mt-5" style="position: absolute;top: 15%">
             <div class="github-comment">
-                <p>欢迎使用S-DES Cipher Conversion工具！这是一个简单但实用的对称加密工具，
-                    基于SDES（简单数据加密标准）算法。在这里，您可以方便地进行位（Bit）或ASCII加密。</p>
+                <p>欢迎使用S-AES Cipher Conversion工具！这是一个简单但实用的对称加密工具，
+                    基于SAES（简化高级加密标准）算法。在这里，您可以方便地进行位（Bit）或ASCII加密。</p>
                 <p>使用步骤：</p>
                 <ul>
                     <li>输入密钥：在"请输入加解密使用的密钥"框中输入您的密钥。</li>
@@ -86,7 +88,7 @@
             </div>
 
             <textarea class="plaintextArea" id="plaintext" name="plaintext"
-                      placeholder="输入加解密对应的原文或者密文：&#10;请注意如果选择bit型加密，请输入8位二进制数；&#10;如果选择ASCII型加密，则输入您需要加密的原文字符串即可。"></textarea>
+                      placeholder="输入加解密对应的原文或者密文：&#10;请注意如果选择bit型加密，请输入16位二进制数；&#10;如果选择ASCII型加密，则输入您需要加密的原文字符串即可。"></textarea>
             <textarea class="ciphertextArea" id="ciphertext" name="ciphertext" placeholder="&#10;&#10;&#10;&#10;输出结果"
                       readonly="true">
             </textarea>
@@ -119,7 +121,7 @@
         <h2 style="position: absolute;top:60%;text-align: center">
             项目成员：2021级软件工程03班 方珩、杨俣豪</h2>
         <h3 style="position: absolute;top:75%;text-align: center">作业目标:
-            学习S-DES的加解密流程,并使用编程语言实现S-DES加密算法实例。</h3>
+            学习S-AES的加解密流程,并使用编程语言实现S-AES加密算法实例。</h3>
         <h3 style="position: absolute;top:80%;text-align: center">目前进度:
             增加了程序对ASCII码的适应，完成实用性的扩展，并完成对应五项任务的测试。</h3>
         <div>
@@ -155,6 +157,7 @@
             var key = $('#key').val();
             var plaintext = $('#plaintext').val();
             var trans_type = $("input[name='choice']:checked").val()
+
             $.ajax({
                 type: "POST",
                 data: {

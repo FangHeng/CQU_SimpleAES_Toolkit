@@ -179,7 +179,6 @@ class SAES:
 if __name__ == '__main__':
     key = '0010110101010101'
     saes = SAES(key=key)
-
     plaintext = '0110101110100011'
     print(f'本次SAES加密明文为：{plaintext}')
     encrypted_ciphertext = saes.encrypt(plaintext)
