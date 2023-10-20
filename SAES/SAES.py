@@ -75,7 +75,7 @@ class SAES:
             return sbox[row][col]
 
         nibbles = [text[i:i + 4] for i in range(0, len(text), 4)]
-        return ''.join(lookup(self.S_BOX, nibble) for nibble in nibbles)
+        return ''.join(lookup(sbox, nibble) for nibble in nibbles)
 
     @staticmethod
     def row_shift(text):
@@ -159,17 +159,17 @@ class SAES:
         # 密钥扩展
         keys = self.key_expansion()
 
-        # 初始轮密钥解密
+        # 初始轮密钥加密
         initial_text = self.round_key_addition(ciphertext, keys[2])
 
         # 第一轮逆操作
         after_inv_row_shift1 = self.row_shift(initial_text)
         after_inv_sub_byte1 = self.sub_byte(after_inv_row_shift1, use_inverse=True)
-        after_inv_key_addition1 = self.round_key_addition(after_inv_sub_byte1, keys[1])
+        after_key_addition1 = self.round_key_addition(after_inv_sub_byte1, keys[1])
 
         # 第二轮逆操作
-        after_inv_mix_columns1 = self.mix_columns(after_inv_key_addition1, self.MixMatrix_INV)
-        after_inv_row_shift2 = self.row_shift(after_inv_mix_columns1)
+        after_inv_mix_columns = self.mix_columns(after_key_addition1, [[9, 2], [2, 9]])
+        after_inv_row_shift2 = self.row_shift(after_inv_mix_columns)
         after_inv_sub_byte2 = self.sub_byte(after_inv_row_shift2, use_inverse=True)
         plaintext = self.round_key_addition(after_inv_sub_byte2, keys[0])
 
@@ -182,7 +182,7 @@ if __name__ == '__main__':
 
     plaintext = '0110101110100011'
     print(f'本次SAES加密明文为：{plaintext}')
-    ciphertext = saes.encrypt(plaintext)
-    print(f'通过SAES加密后的密文为：{ciphertext}')
-    saes.decrypt(ciphertext)
-    print(f'通过SAES解密后的明文为：{plaintext}')
+    encrypted_ciphertext = saes.encrypt(plaintext)
+    print(f'通过SAES加密后的密文为：{encrypted_ciphertext}')
+    decrypted_plaintext = saes.decrypt(encrypted_ciphertext)
+    print(f'通过SAES解密后的明文为：{decrypted_plaintext}')
